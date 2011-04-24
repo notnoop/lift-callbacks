@@ -8,16 +8,33 @@ import java.util.Date
 import code.lib._
 import Helpers._
 
-class HelloWorld {
-  lazy val date: Box[Date] = DependencyFactory.inject[Date] // inject the date
+import net.liftweb.http._
+import net.liftweb.http.js._
 
-  // replace the contents of the element with id "time" with the date
-  def howdy = "#time *" #> date.map(_.toString)
+class HelloWorld extends StatefulSnippet {
+   def dispatch = {
+     case _ => render
+   }
 
-  /*
-   lazy val date: Date = DependencyFactory.time.vend // create the date via factory
+   var initialized = false
+   var a = ""
 
-   def howdy = "#time *" #> date.toString
-   */
+   def render = {
+     ".addField" #> SHtml.ajaxButton("Add field", () => {
+       JsCmds.SetHtml("field", SHtml.text(a, {t=>
+         initialized = true
+         println("Initialized: " + t)
+       }))}) &
+     "type=submit" #> SHtml.onSubmitUnit(process _)
+   }
+
+   def process() = {
+     println("Processing")
+     if (!initialized) {
+       S.error(<p>Field hasn't been initialized</p>)
+     } else {
+       S.notice(<p>Field has been initialized and is "{ a }"</p>)
+     }
+   }
 }
 
